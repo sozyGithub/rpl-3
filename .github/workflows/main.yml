@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - linter-test
 jobs:
   build:
     name: Build
@@ -15,37 +16,3 @@ jobs:
           python -m pip install pylint
           pip install flask
           pylint app.py --disable=C0114,C0116
-      - name: create folder for copying file
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: mkdir -p /home/rplcicd/13521150
-      - name: copy file via ssh password
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          source: "app.py"
-          target: "/home/rplcicd/13521150/"
-      - name: kill existing flask app
-        continue-on-error: true
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: pkill -f 21150
-      - name: start flask app
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: cd /home/rplcicd/13521150 && screen -dmS flask-21150 python3 -m flask run --host=0.0.0.0 --port=21150 && ps -ef | grep 21150
